@@ -19,8 +19,6 @@ package com.google.android.flexbox
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.support.design.widget.TextInputLayout
-import android.support.v4.app.DialogFragment
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.KeyEvent
@@ -30,8 +28,10 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.fragment.app.DialogFragment
 import com.google.android.apps.flexbox.R
 import com.google.android.flexbox.validators.*
+import com.google.android.material.textfield.TextInputLayout
 
 /**
  * DialogFragment that changes the properties for a flex item.
@@ -66,12 +66,12 @@ internal class FlexItemEditFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_Material_Light_Dialog)
+            setStyle(STYLE_NORMAL, android.R.style.Theme_Material_Light_Dialog)
         } else {
-            setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_Dialog)
+            setStyle(STYLE_NORMAL, android.R.style.Theme_Dialog)
         }
         arguments?.let {
-            flexItem = it.getParcelable(FLEX_ITEM_KEY)
+            flexItem = it.getParcelable(FLEX_ITEM_KEY)!!
             viewIndex = it.getInt(VIEW_INDEX_KEY)
         }
         flexItemInEdit = createNewFlexItem(flexItem)
@@ -89,7 +89,7 @@ internal class FlexItemEditFragment : DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_flex_item_edit, container, false)
-        dialog.setTitle((viewIndex + 1).toString())
+        dialog?.setTitle((viewIndex + 1).toString())
 
         val context = activity ?: return view
         val orderTextInput: TextInputLayout = view.findViewById(R.id.input_layout_order)
@@ -176,7 +176,7 @@ internal class FlexItemEditFragment : DialogFragment() {
                 widthEdit, heightEdit, minWidthEdit, minHeightEdit, maxWidthEdit, maxHeightEdit)
 
         val alignSelfSpinner: Spinner = view.findViewById(R.id.spinner_align_self)
-        val arrayAdapter = ArrayAdapter.createFromResource(activity,
+        val arrayAdapter = ArrayAdapter.createFromResource(requireActivity(),
                 R.array.array_align_self, R.layout.spinner_item)
         alignSelfSpinner.adapter = arrayAdapter
         alignSelfSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -333,7 +333,7 @@ internal class FlexItemEditFragment : DialogFragment() {
             copyFlexItemValues(item, newItem)
             return newItem
         }
-        throw IllegalArgumentException("Unknown FlexItem: " + item)
+        throw IllegalArgumentException("Unknown FlexItem: $item")
     }
 
     private fun copyFlexItemValues(from: FlexItem, to: FlexItem) {

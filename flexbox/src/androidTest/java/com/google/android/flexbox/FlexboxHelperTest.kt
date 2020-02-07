@@ -16,14 +16,17 @@
 
 package com.google.android.flexbox
 
-import android.support.test.rule.ActivityTestRule
-import android.support.test.runner.AndroidJUnit4
 import android.view.View
+import android.widget.CheckBox
+import android.widget.TextView
+import androidx.core.widget.CompoundButtonCompat
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.rule.ActivityTestRule
 import com.google.android.flexbox.test.FlexboxTestActivity
 import com.google.android.flexbox.test.IsEqualAllowingError.Companion.isEqualAllowingError
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertNotNull
 import org.hamcrest.Matchers.`is`
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -35,6 +38,13 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class FlexboxHelperTest {
+
+    private val LONG_TEXT = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do " +
+            "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim " +
+            "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo " +
+            "consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum " +
+            "dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, " +
+            "sunt in culpa qui officia deserunt mollit anim id est laborum."
 
     @JvmField
     @Rule
@@ -327,6 +337,140 @@ class FlexboxHelperTest {
 
     @Test
     @Throws(Throwable::class)
+    fun testDetermineMainSize_directionRow_fixedSizeViewAndShrinkable_doNotExceedMaxMainSize() {
+        val activity = activityRule.activity
+        val lp1 = FlexboxLayout.LayoutParams(100, 100)
+        val view1 = View(activity)
+        lp1.flexShrink = 0f
+        view1.layoutParams = lp1
+        val lp2 = FlexboxLayout.LayoutParams(
+                FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                FlexboxLayout.LayoutParams.WRAP_CONTENT)
+        val view2 = TextView(activity)
+        view2.layoutParams = lp2
+        view2.text = LONG_TEXT
+        flexContainer.addView(view1)
+        flexContainer.addView(view2)
+        flexContainer.flexWrap = FlexWrap.NOWRAP
+        val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(500, View.MeasureSpec.AT_MOST)
+        val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(1000, View.MeasureSpec.UNSPECIFIED)
+        val result = FlexboxHelper.FlexLinesResult()
+        flexboxHelper.calculateHorizontalFlexLines(result, widthMeasureSpec, heightMeasureSpec)
+        flexContainer.flexLines = result.mFlexLines
+        flexboxHelper.determineMainSize(widthMeasureSpec, heightMeasureSpec)
+
+        // Container with WRAP_CONTENT and a max width forces resizable children to shrink
+        // to avoid exceeding max available space.
+        assertThat(view1.measuredWidth, `is`(100))
+        assertThat(view2.measuredWidth, `is`(400))
+    }
+
+    @Test
+    @Throws(Throwable::class)
+    fun testDetermineMainSize_directionRow_twoFixedSizeViewsAndShrinkable_doNotExceedMaxMainSize() {
+        val activity = activityRule.activity
+        val lp1 = FlexboxLayout.LayoutParams(100, 100)
+        val view1 = View(activity)
+        lp1.flexShrink = 0f
+        view1.layoutParams = lp1
+        val lp2 = FlexboxLayout.LayoutParams(
+                FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                FlexboxLayout.LayoutParams.WRAP_CONTENT)
+        val view2 = TextView(activity)
+        view2.layoutParams = lp2
+        view2.text = LONG_TEXT
+        val lp3 = FlexboxLayout.LayoutParams(100, 100)
+        val view3 = View(activity)
+        lp3.flexShrink = 0f
+        view3.layoutParams = lp3
+        flexContainer.addView(view1)
+        flexContainer.addView(view2)
+        flexContainer.addView(view3)
+        flexContainer.flexWrap = FlexWrap.NOWRAP
+        val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(500, View.MeasureSpec.AT_MOST)
+        val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(1000, View.MeasureSpec.UNSPECIFIED)
+        val result = FlexboxHelper.FlexLinesResult()
+        flexboxHelper.calculateHorizontalFlexLines(result, widthMeasureSpec, heightMeasureSpec)
+        flexContainer.flexLines = result.mFlexLines
+        flexboxHelper.determineMainSize(widthMeasureSpec, heightMeasureSpec)
+
+        // Container with WRAP_CONTENT and a max width forces resizable children to shrink
+        // to avoid exceeding max available space.
+        assertThat(view1.measuredWidth, `is`(100))
+        assertThat(view2.measuredWidth, `is`(300))
+        assertThat(view3.measuredWidth, `is`(100))
+    }
+
+    @Test
+    @Throws(Throwable::class)
+    fun testDetermineMainSize_directionRow_considerCompoundButtonImplicitMinSizeWhenNotSpecified() {
+        val containerWidth = 500
+        val activity = activityRule.activity
+        val lp1 = FlexboxLayout.LayoutParams(
+                FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                FlexboxLayout.LayoutParams.WRAP_CONTENT)
+        val view1 = CheckBox(activity)
+        view1.layoutParams = lp1
+        val lp2 = FlexboxLayout.LayoutParams(
+                FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                FlexboxLayout.LayoutParams.WRAP_CONTENT)
+        val view2 = TextView(activity)
+        view2.layoutParams = lp2
+        view2.text = LONG_TEXT
+        flexContainer.addView(view1)
+        flexContainer.addView(view2)
+        flexContainer.flexWrap = FlexWrap.NOWRAP
+        val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(containerWidth, View.MeasureSpec.AT_MOST)
+        val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(1000, View.MeasureSpec.UNSPECIFIED)
+        val result = FlexboxHelper.FlexLinesResult()
+        flexboxHelper.calculateHorizontalFlexLines(result, widthMeasureSpec, heightMeasureSpec)
+        flexContainer.flexLines = result.mFlexLines
+        flexboxHelper.determineMainSize(widthMeasureSpec, heightMeasureSpec)
+
+        // CompoundButton will use its ButtonDrawable minWidth to determine its size when
+        // no minimum width is set on it.
+        val drawableMinWidth = CompoundButtonCompat.getButtonDrawable(view1)!!.minimumWidth
+        val expectedTextWidth = containerWidth - drawableMinWidth
+        assertThat(view1.measuredWidth, `is`(drawableMinWidth))
+        assertThat(view2.measuredWidth, `is`(expectedTextWidth))
+    }
+
+    @Test
+    @Throws(Throwable::class)
+    fun testDetermineMainSize_directionRow_considerCompoundButtonExplicitMinSizeWhenSpecified() {
+        val containerWidth = 500
+        val compoundButtonMinWidth = 150
+        val activity = activityRule.activity
+        val lp1 = FlexboxLayout.LayoutParams(
+                FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                FlexboxLayout.LayoutParams.WRAP_CONTENT)
+        lp1.minWidth = compoundButtonMinWidth
+        val view1 = CheckBox(activity)
+        view1.layoutParams = lp1
+        val lp2 = FlexboxLayout.LayoutParams(
+                FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                FlexboxLayout.LayoutParams.WRAP_CONTENT)
+        val view2 = TextView(activity)
+        view2.layoutParams = lp2
+        view2.text = LONG_TEXT
+        flexContainer.addView(view1)
+        flexContainer.addView(view2)
+        flexContainer.flexWrap = FlexWrap.NOWRAP
+        val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(containerWidth, View.MeasureSpec.AT_MOST)
+        val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(1000, View.MeasureSpec.UNSPECIFIED)
+        val result = FlexboxHelper.FlexLinesResult()
+        flexboxHelper.calculateHorizontalFlexLines(result, widthMeasureSpec, heightMeasureSpec)
+        flexContainer.flexLines = result.mFlexLines
+        flexboxHelper.determineMainSize(widthMeasureSpec, heightMeasureSpec)
+
+        // CompoundButton will be measured based on its explicitly specified minWidth.
+        val expectedTextWidth = containerWidth - compoundButtonMinWidth
+        assertThat(view1.measuredWidth, `is`(compoundButtonMinWidth))
+        assertThat(view2.measuredWidth, `is`(expectedTextWidth))
+    }
+
+    @Test
+    @Throws(Throwable::class)
     fun testDetermineCrossSize_direction_row_alignContent_stretch() {
         val activity = activityRule.activity
         val lp1 = FlexboxLayout.LayoutParams(100, 100)
@@ -426,5 +570,44 @@ class FlexboxHelperTest {
         combined = flexboxHelper.makeCombinedLong(lower, higher)
         assertThat(flexboxHelper.extractHigherInt(combined), `is`(higher))
         assertThat(flexboxHelper.extractLowerInt(combined), `is`(lower))
+    }
+
+    @Test
+    fun testFlexLine_anyItemsHaveFlexGrow() {
+        val activity = activityRule.activity
+        val lp1 = FlexboxLayout.LayoutParams(100, 100).apply {
+            flexGrow = 1.0f
+        }
+        val view1 = View(activity)
+        view1.layoutParams = lp1
+        val lp2 = FlexboxLayout.LayoutParams(100, 200)
+        val view2 = View(activity)
+        view2.layoutParams = lp2
+        val lp3 = FlexboxLayout.LayoutParams(100, 300)
+        val view3 = View(activity)
+        view3.layoutParams = lp3
+        val lp4 = FlexboxLayout.LayoutParams(100, 400).apply {
+            flexGrow = 2.0f
+        }
+        val view4 = View(activity)
+        view4.layoutParams = lp4
+        flexContainer.apply {
+            addView(view1)
+            addView(view2)
+            addView(view3)
+            addView(view4)
+            flexDirection = FlexDirection.COLUMN
+            flexWrap = FlexWrap.WRAP
+            alignContent = AlignContent.STRETCH
+        }
+        val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(1000, View.MeasureSpec.EXACTLY)
+        val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(500, View.MeasureSpec.EXACTLY)
+        val result = FlexboxHelper.FlexLinesResult()
+        flexboxHelper.calculateVerticalFlexLines(result, widthMeasureSpec, heightMeasureSpec)
+        flexContainer.flexLines = result.mFlexLines
+        assertThat(flexContainer.flexLines.size, `is`(3))
+        assertThat(flexContainer.flexLines[0].mAnyItemsHaveFlexGrow, `is`(true))
+        assertThat(flexContainer.flexLines[1].mAnyItemsHaveFlexGrow, `is`(false))
+        assertThat(flexContainer.flexLines[2].mAnyItemsHaveFlexGrow, `is`(true))
     }
 }

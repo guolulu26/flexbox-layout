@@ -16,19 +16,14 @@
 
 package com.google.android.flexbox;
 
-import static android.support.v7.widget.LinearLayoutManager.INVALID_OFFSET;
-import static android.support.v7.widget.RecyclerView.NO_POSITION;
+import static androidx.recyclerview.widget.LinearLayoutManager.INVALID_OFFSET;
+import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 
 import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSmoothScroller;
-import android.support.v7.widget.OrientationHelper;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
@@ -37,6 +32,13 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
+import androidx.recyclerview.widget.OrientationHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * LayoutManager for the {@link RecyclerView}. This class is intended to be used within a
@@ -87,6 +89,8 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
      * @see FlexContainer#getAlignItems()
      */
     private int mAlignItems;
+
+    private int mMaxLine = NOT_SET;
 
     /**
      * True if the layout direction is right to left, false otherwise.
@@ -354,6 +358,19 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
     }
 
     @Override
+    public int getMaxLine() {
+        return mMaxLine;
+    }
+
+    @Override
+    public void setMaxLine(int maxLine) {
+        if (mMaxLine != maxLine) {
+            mMaxLine = maxLine;
+            requestLayout();
+        }
+    }
+
+    @Override
     public List<FlexLine> getFlexLines() {
         List<FlexLine> result = new ArrayList<>(mFlexLines.size());
         for (int i = 0, size = mFlexLines.size(); i < size; i++) {
@@ -583,38 +600,37 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
     }
 
     @Override
-    public void onItemsAdded(RecyclerView recyclerView, int positionStart, int itemCount) {
+    public void onItemsAdded(@NonNull RecyclerView recyclerView, int positionStart, int itemCount) {
         super.onItemsAdded(recyclerView, positionStart, itemCount);
         updateDirtyPosition(positionStart);
     }
 
     @Override
-    public void onItemsUpdated(RecyclerView recyclerView, int positionStart, int itemCount,
+    public void onItemsUpdated(@NonNull RecyclerView recyclerView, int positionStart, int itemCount,
             Object payload) {
         super.onItemsUpdated(recyclerView, positionStart, itemCount, payload);
         updateDirtyPosition(positionStart);
     }
 
     @Override
-    public void onItemsUpdated(RecyclerView recyclerView, int positionStart, int itemCount) {
+    public void onItemsUpdated(@NonNull RecyclerView recyclerView, int positionStart, int itemCount) {
         super.onItemsUpdated(recyclerView, positionStart, itemCount);
         updateDirtyPosition(positionStart);
     }
 
     @Override
-    public void onItemsRemoved(RecyclerView recyclerView, int positionStart, int itemCount) {
+    public void onItemsRemoved(@NonNull RecyclerView recyclerView, int positionStart, int itemCount) {
         super.onItemsRemoved(recyclerView, positionStart, itemCount);
         updateDirtyPosition(positionStart);
     }
 
     @Override
-    public void onItemsMoved(RecyclerView recyclerView, int from, int to, int itemCount) {
+    public void onItemsMoved(@NonNull RecyclerView recyclerView, int from, int to, int itemCount) {
         super.onItemsMoved(recyclerView, from, to, itemCount);
         updateDirtyPosition(Math.min(from, to));
     }
 
     private void updateDirtyPosition(int positionStart) {
-        int firstVisiblePosition = findFirstVisibleItemPosition();
         int lastVisiblePosition = findLastVisibleItemPosition();
         if (positionStart >= lastVisiblePosition) {
             return;
@@ -633,9 +649,6 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
 
         View firstView = getChildClosestToStart();
         if (firstView == null) {
-            return;
-        }
-        if (firstVisiblePosition <= positionStart && positionStart <= lastVisiblePosition) {
             return;
         }
 
@@ -776,7 +789,7 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
             gap = mOrientationHelper.getEndAfterPadding() - startOffset;
             if (gap > 0) {
                 // check if we should fix this gap.
-                fixOffset = handleScrollingCrossAxis(-gap, recycler, state);
+                fixOffset = handleScrollingMainOrientation(-gap, recycler, state);
             } else {
                 return 0; // nothing to fix
             }
@@ -784,7 +797,7 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
             gap = startOffset - mOrientationHelper.getStartAfterPadding();
             if (gap > 0) {
                 // check if we should fix this gap.
-                fixOffset = -handleScrollingCrossAxis(gap, recycler, state);
+                fixOffset = -handleScrollingMainOrientation(gap, recycler, state);
             } else {
                 return 0; // nothing to fix
             }
@@ -815,14 +828,14 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
         if (columnAndRtl) {
             gap = endOffset - mOrientationHelper.getStartAfterPadding();
             if (gap > 0) {
-                fixOffset = handleScrollingCrossAxis(gap, recycler, state);
+                fixOffset = handleScrollingMainOrientation(gap, recycler, state);
             } else {
                 return 0; // nothing to fix
             }
         } else {
             gap = mOrientationHelper.getEndAfterPadding() - endOffset;
             if (gap > 0) {
-                fixOffset = -handleScrollingCrossAxis(-gap, recycler, state);
+                fixOffset = -handleScrollingMainOrientation(-gap, recycler, state);
             } else {
                 return 0; // nothing to fix
             }
@@ -1882,23 +1895,32 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
 
     @Override
     public boolean canScrollHorizontally() {
-        return !isMainAxisDirectionHorizontal() || getWidth() > mParent.getWidth();
+        if (mFlexWrap == FlexWrap.NOWRAP) {
+            return isMainAxisDirectionHorizontal();
+        } else {
+            return !isMainAxisDirectionHorizontal() || getWidth() > (mParent != null ? mParent.getWidth() : 0);
+        }
     }
 
     @Override
     public boolean canScrollVertically() {
-        return isMainAxisDirectionHorizontal() || getHeight() > mParent.getHeight();
+        if (mFlexWrap == FlexWrap.NOWRAP) {
+            return !isMainAxisDirectionHorizontal();
+        } else {
+            return isMainAxisDirectionHorizontal() || getHeight() > (mParent != null ? mParent.getHeight() : 0);
+        }
     }
 
     @Override
     public int scrollHorizontallyBy(int dx, RecyclerView.Recycler recycler,
             RecyclerView.State state) {
-        if (!isMainAxisDirectionHorizontal()) {
-            int scrolled = handleScrollingCrossAxis(dx, recycler, state);
+        if (!isMainAxisDirectionHorizontal() ||
+                (mFlexWrap == FlexWrap.NOWRAP && isMainAxisDirectionHorizontal())) {
+            int scrolled = handleScrollingMainOrientation(dx, recycler, state);
             mViewCache.clear();
             return scrolled;
         } else {
-            int scrolled = handleScrollingMainAxis(dx);
+            int scrolled = handleScrollingSubOrientation(dx);
             mAnchorInfo.mPerpendicularCoordinate += scrolled;
             mSubOrientationHelper.offsetChildren(-scrolled);
             return scrolled;
@@ -1908,12 +1930,13 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler,
             RecyclerView.State state) {
-        if (isMainAxisDirectionHorizontal()) {
-            int scrolled = handleScrollingCrossAxis(dy, recycler, state);
+        if (isMainAxisDirectionHorizontal() ||
+                (mFlexWrap == FlexWrap.NOWRAP && !isMainAxisDirectionHorizontal())) {
+            int scrolled = handleScrollingMainOrientation(dy, recycler, state);
             mViewCache.clear();
             return scrolled;
         } else {
-            int scrolled = handleScrollingMainAxis(dy);
+            int scrolled = handleScrollingSubOrientation(dy);
             mAnchorInfo.mPerpendicularCoordinate += scrolled;
             mSubOrientationHelper.offsetChildren(-scrolled);
             return scrolled;
@@ -1921,13 +1944,15 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
     }
 
     /**
+     * Handle the scrolling along the direction of {@link #mOrientationHelper}.
+     *
      * @param delta    the delta for the amount that is being scrolled
      *                 (either horizontally or vertically)
      * @param recycler the Recycler instance
      * @param state    the Recycler.State instance
      * @return the amount actually scrolled
      */
-    private int handleScrollingCrossAxis(int delta, RecyclerView.Recycler recycler,
+    private int handleScrollingMainOrientation(int delta, RecyclerView.Recycler recycler,
             RecyclerView.State state) {
         if (getChildCount() == 0 || delta == 0) {
             return 0;
@@ -1961,7 +1986,14 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
         return scrolled;
     }
 
-    private int handleScrollingMainAxis(int delta) {
+    /**
+     * Handle the scrolling along the direction of {@link #mSubOrientationHelper}.
+     *
+     * @param delta    the delta for the amount that is being scrolled
+     *                 (either horizontally or vertically)
+     * @return  the amount actually scrolled
+     */
+    private int handleScrollingSubOrientation(int delta) {
         if (getChildCount() == 0 || delta == 0) {
             return 0;
         }
@@ -1970,7 +2002,7 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
         int parentLength = isMainAxisHorizontal ? mParent.getWidth() : mParent.getHeight();
         int mainAxisLength = isMainAxisHorizontal ? getWidth() : getHeight();
 
-        boolean layoutRtl  = getLayoutDirection() == ViewCompat.LAYOUT_DIRECTION_RTL;
+        boolean layoutRtl = getLayoutDirection() == ViewCompat.LAYOUT_DIRECTION_RTL;
         if (layoutRtl) {
             int absDelta = Math.abs(delta);
             if (delta < 0) {
@@ -2215,7 +2247,7 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
         if (DEBUG) {
             Log.d(TAG, "computeHorizontalScrollOffset: " + scrollOffset);
         }
-        return computeScrollOffset(state);
+        return scrollOffset;
     }
 
     @Override
@@ -2300,7 +2332,7 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
     }
 
     /**
-     * Copied from {@link android.support.v7.widget.RecyclerView.LayoutManager#shouldMeasureChild
+     * Copied from {@link RecyclerView.LayoutManager#shouldMeasureChild
      * (View,
      * int, int, RecyclerView.LayoutParams)}}
      */
@@ -2314,7 +2346,7 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
 
     /**
      * Copied from
-     * {@link android.support.v7.widget.RecyclerView.LayoutManager#isMeasurementUpToDate(int, int,
+     * {@link RecyclerView.LayoutManager#isMeasurementUpToDate(int, int,
      * int)}
      */
     private static boolean isMeasurementUpToDate(int childSize, int spec, int dimension) {
@@ -2501,7 +2533,7 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
     /**
      * @param position the index of the view
      * @return the index of the {@link FlexLine}, which includes the view whose index is passed as
-     *         the position argument.
+     * the position argument.
      */
     int getPositionToFlexLineIndex(int position) {
         assert mFlexboxHelper.mIndexToFlexLine != null;
@@ -2856,27 +2888,37 @@ public class FlexboxLayoutManager extends RecyclerView.LayoutManager implements 
         }
 
         private void assignFromView(View anchor) {
+            OrientationHelper orientationHelper;
+            // When the flex wrap is nowrap, the orientation helper is changed to
+            // perpendicular. Need to use the mSubOrientationHelper to be consistent with
+            // when flex wrap is not nowrap.
+            if (mFlexWrap == FlexWrap.NOWRAP) {
+                orientationHelper = mSubOrientationHelper;
+            } else {
+                orientationHelper = mOrientationHelper;
+            }
             if (!isMainAxisDirectionHorizontal() && mIsRtl) {
                 // We need to use the anchor view as starting from right if the flex direction is
                 // (column or column_reverse) and layout direction is RTL.
                 if (mLayoutFromEnd) {
-                    mCoordinate = mOrientationHelper.getDecoratedStart(anchor) +
-                            mOrientationHelper.getTotalSpaceChange();
+                    mCoordinate = orientationHelper.getDecoratedStart(anchor) +
+                        orientationHelper.getTotalSpaceChange();
                 } else {
-                    mCoordinate = mOrientationHelper.getDecoratedEnd(anchor);
+                    mCoordinate = orientationHelper.getDecoratedEnd(anchor);
                 }
             } else {
                 if (mLayoutFromEnd) {
-                    mCoordinate = mOrientationHelper.getDecoratedEnd(anchor) +
-                            mOrientationHelper.getTotalSpaceChange();
+                    mCoordinate = orientationHelper.getDecoratedEnd(anchor) +
+                        orientationHelper.getTotalSpaceChange();
                 } else {
-                    mCoordinate = mOrientationHelper.getDecoratedStart(anchor);
+                    mCoordinate = orientationHelper.getDecoratedStart(anchor);
                 }
             }
             mPosition = getPosition(anchor);
             mAssignedFromSavedState = false;
             assert mFlexboxHelper.mIndexToFlexLine != null;
-            int flexLinePosition = mFlexboxHelper.mIndexToFlexLine[mPosition];
+            int flexLinePosition =
+                    mFlexboxHelper.mIndexToFlexLine[mPosition != NO_POSITION ? mPosition : 0];
             mFlexLinePosition = flexLinePosition != NO_POSITION ? flexLinePosition : 0;
             // It's likely that the view is the first item in a flex line, but if not get the
             // index of the first item in the same line because the calculation of the flex lines

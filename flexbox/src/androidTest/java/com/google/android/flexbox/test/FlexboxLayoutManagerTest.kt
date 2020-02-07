@@ -19,28 +19,41 @@ package com.google.android.flexbox.test
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.support.test.InstrumentationRegistry
-import android.support.test.espresso.Espresso.onView
-import android.support.test.espresso.ViewAction
-import android.support.test.espresso.action.*
-import android.support.test.espresso.matcher.ViewMatchers.withId
-import android.support.test.filters.FlakyTest
-import android.support.test.filters.MediumTest
-import android.support.test.rule.ActivityTestRule
-import android.support.test.runner.AndroidJUnit4
-import android.support.v4.content.res.ResourcesCompat
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
 import android.widget.TextView
-import com.google.android.flexbox.*
+import androidx.core.content.res.ResourcesCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.ViewAction
+import androidx.test.espresso.action.CoordinatesProvider
+import androidx.test.espresso.action.GeneralLocation
+import androidx.test.espresso.action.GeneralSwipeAction
+import androidx.test.espresso.action.Press
+import androidx.test.espresso.action.Swipe
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.FlakyTest
+import androidx.test.filters.MediumTest
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.ActivityTestRule
+import com.google.android.flexbox.AlignItems
+import com.google.android.flexbox.AlignSelf
+import com.google.android.flexbox.FlexDirection
+import com.google.android.flexbox.FlexWrap
+import com.google.android.flexbox.FlexboxItemDecoration
 import com.google.android.flexbox.FlexboxItemDecoration.HORIZONTAL
 import com.google.android.flexbox.FlexboxItemDecoration.VERTICAL
+import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.flexbox.JustifyContent
 import com.google.android.flexbox.test.IsEqualAllowingError.Companion.isEqualAllowingError
-import junit.framework.Assert.assertTrue
-import org.hamcrest.Matchers.*
+import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.instanceOf
+import org.hamcrest.Matchers.lessThan
+import org.hamcrest.Matchers.notNullValue
 import org.hamcrest.core.IsNot.not
 import org.junit.Assert.assertThat
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -255,9 +268,9 @@ class FlexboxLayoutManagerTest {
         // fill the horizontal remaining space
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(2))
-        assertThat(layoutManager.getChildAt(0).width, isEqualAllowingError(activity.dpToPixel(160)))
-        assertThat(layoutManager.getChildAt(1).width, isEqualAllowingError(activity.dpToPixel(160)))
-        assertThat(layoutManager.getChildAt(2).width, isEqualAllowingError(activity.dpToPixel(320)))
+        assertThat(layoutManager.getChildAt(0)!!.width, isEqualAllowingError(activity.dpToPixel(160)))
+        assertThat(layoutManager.getChildAt(1)!!.width, isEqualAllowingError(activity.dpToPixel(160)))
+        assertThat(layoutManager.getChildAt(2)!!.width, isEqualAllowingError(activity.dpToPixel(320)))
     }
 
     @Test
@@ -369,12 +382,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.FLEX_START))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(0)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(50)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(50)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(100)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(100)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(150)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(0)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(50)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(50)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(150)))
     }
 
     @Test
@@ -403,12 +419,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.FLEX_END))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(170)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(220)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(220)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(270)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(270)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(320)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(170)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(220)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(220)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(270)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(270)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(320)))
     }
 
     @Test
@@ -437,12 +456,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.CENTER))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(85)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(135)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(135)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(185)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(185)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(235)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(85)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(135)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(135)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(185)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(185)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(235)))
     }
 
     @Test
@@ -471,12 +493,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_AROUND))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(28)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(78)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(135)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(185)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(242)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(292)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(28)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(78)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(135)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(185)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(242)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(292)))
     }
 
 
@@ -506,12 +531,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_EVENLY))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(43)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(93)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(135)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(185)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(228)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(278)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(43)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(93)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(135)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(185)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(228)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(278)))
     }
 
     @Test
@@ -540,12 +568,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_BETWEEN))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(0)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(50)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(135)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(185)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(270)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(320)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(0)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(50)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(135)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(185)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(270)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(320)))
     }
 
     @Test
@@ -576,12 +607,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.FLEX_START))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(270)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(320)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(220)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(270)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(170)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(220)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(270)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(320)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(220)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(270)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(170)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(220)))
     }
 
     @Test
@@ -612,12 +646,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.FLEX_END))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(100)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(150)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(50)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(100)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(0)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(50)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(150)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(50)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(0)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(50)))
     }
 
     @Test
@@ -648,12 +685,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.CENTER))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(185)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(235)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(135)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(185)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(85)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(135)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(185)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(235)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(135)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(185)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(85)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(135)))
     }
 
     @Test
@@ -684,12 +724,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_AROUND))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(242)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(292)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(135)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(185)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(28)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(78)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(242)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(292)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(135)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(185)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(28)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(78)))
     }
 
     @Test
@@ -720,12 +763,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_EVENLY))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(228)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(278)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(135)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(185)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(43)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(93)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(228)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(278)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(135)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(185)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(43)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(93)))
     }
 
     @Test
@@ -756,12 +802,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_BETWEEN))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).left, isEqualAllowingError(activity.dpToPixel(270)))
-        assertThat(layoutManager.getChildAt(0).right, isEqualAllowingError(activity.dpToPixel(320)))
-        assertThat(layoutManager.getChildAt(1).left, isEqualAllowingError(activity.dpToPixel(135)))
-        assertThat(layoutManager.getChildAt(1).right, isEqualAllowingError(activity.dpToPixel(185)))
-        assertThat(layoutManager.getChildAt(2).left, isEqualAllowingError(activity.dpToPixel(0)))
-        assertThat(layoutManager.getChildAt(2).right, isEqualAllowingError(activity.dpToPixel(50)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.left, isEqualAllowingError(activity.dpToPixel(270)))
+        assertThat(view0.right, isEqualAllowingError(activity.dpToPixel(320)))
+        assertThat(view1.left, isEqualAllowingError(activity.dpToPixel(135)))
+        assertThat(view1.right, isEqualAllowingError(activity.dpToPixel(185)))
+        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(0)))
+        assertThat(view2.right, isEqualAllowingError(activity.dpToPixel(50)))
     }
 
     @Test
@@ -792,12 +841,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.FLEX_START))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(0)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(50)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(50)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(100)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(100)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(150)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(0)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(50)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(50)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(150)))
     }
 
     @Test
@@ -828,12 +880,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.FLEX_END))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(90)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(140)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(140)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(190)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(190)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(240)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(90)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(140)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(140)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(190)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(190)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(240)))
     }
 
     @Test
@@ -864,12 +919,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.CENTER))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(45)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(95)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(95)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(145)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(145)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(195)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(45)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(95)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(95)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(145)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(145)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(195)))
     }
 
     @Test
@@ -900,12 +958,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_AROUND))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(15)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(65)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(95)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(145)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(175)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(225)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(15)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(65)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(95)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(145)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(175)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(225)))
     }
 
     @Test
@@ -936,12 +997,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_EVENLY))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(23)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(73)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(95)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(145)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(167)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(217)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(23)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(73)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(95)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(145)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(167)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(217)))
     }
 
     @Test
@@ -972,12 +1036,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_BETWEEN))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(0)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(50)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(95)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(145)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(190)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(240)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(0)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(50)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(95)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(145)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(190)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(240)))
     }
 
     @Test
@@ -1008,12 +1075,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.FLEX_START))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(190)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(240)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(140)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(190)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(90)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(140)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(190)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(240)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(140)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(190)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(90)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(140)))
     }
 
     @Test
@@ -1044,12 +1114,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.FLEX_END))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(100)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(150)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(50)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(100)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(0)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(50)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(150)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(50)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(0)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(50)))
     }
 
     @Test
@@ -1080,12 +1153,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.CENTER))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(145)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(195)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(95)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(145)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(45)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(95)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(145)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(195)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(95)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(145)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(45)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(95)))
     }
 
     @Test
@@ -1116,12 +1192,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_AROUND))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(175)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(225)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(95)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(145)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(15)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(65)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(175)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(225)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(95)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(145)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(15)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(65)))
     }
 
     @Test
@@ -1152,12 +1231,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_EVENLY))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(167)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(217)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(95)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(145)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(23)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(73)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(167)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(217)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(95)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(145)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(23)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(73)))
     }
 
     @Test
@@ -1188,12 +1270,15 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.justifyContent, `is`(JustifyContent.SPACE_BETWEEN))
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(190)))
-        assertThat(layoutManager.getChildAt(0).bottom, isEqualAllowingError(activity.dpToPixel(240)))
-        assertThat(layoutManager.getChildAt(1).top, isEqualAllowingError(activity.dpToPixel(95)))
-        assertThat(layoutManager.getChildAt(1).bottom, isEqualAllowingError(activity.dpToPixel(145)))
-        assertThat(layoutManager.getChildAt(2).top, isEqualAllowingError(activity.dpToPixel(0)))
-        assertThat(layoutManager.getChildAt(2).bottom, isEqualAllowingError(activity.dpToPixel(50)))
+        val view0 = layoutManager.getChildAt(0)!!
+        val view1 = layoutManager.getChildAt(1)!!
+        val view2 = layoutManager.getChildAt(2)!!
+        assertThat(view0.top, isEqualAllowingError(activity.dpToPixel(190)))
+        assertThat(view0.bottom, isEqualAllowingError(activity.dpToPixel(240)))
+        assertThat(view1.top, isEqualAllowingError(activity.dpToPixel(95)))
+        assertThat(view1.bottom, isEqualAllowingError(activity.dpToPixel(145)))
+        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(0)))
+        assertThat(view2.bottom, isEqualAllowingError(activity.dpToPixel(50)))
     }
 
     @Test
@@ -1397,9 +1482,9 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
         // Verify all items heights are stretched
-        assertThat(layoutManager.getChildAt(0).height, isEqualAllowingError(activity.dpToPixel(80)))
-        assertThat(layoutManager.getChildAt(1).height, isEqualAllowingError(activity.dpToPixel(80)))
-        assertThat(layoutManager.getChildAt(2).height, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(layoutManager.getChildAt(0)!!.height, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(layoutManager.getChildAt(1)!!.height, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(layoutManager.getChildAt(2)!!.height, isEqualAllowingError(activity.dpToPixel(80)))
     }
 
     @Test
@@ -1431,9 +1516,9 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
         // Verify all items widths are stretched
-        assertThat(layoutManager.getChildAt(0).width, isEqualAllowingError(activity.dpToPixel(80)))
-        assertThat(layoutManager.getChildAt(1).width, isEqualAllowingError(activity.dpToPixel(80)))
-        assertThat(layoutManager.getChildAt(2).width, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(layoutManager.getChildAt(0)!!.width, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(layoutManager.getChildAt(1)!!.width, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(layoutManager.getChildAt(2)!!.width, isEqualAllowingError(activity.dpToPixel(80)))
     }
 
     @Test
@@ -1466,9 +1551,9 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
         // Verify the item whose align self is set to stretch is stretched
-        assertThat(layoutManager.getChildAt(0).height, isEqualAllowingError(activity.dpToPixel(80)))
-        assertThat(layoutManager.getChildAt(1).height, isEqualAllowingError(activity.dpToPixel(50)))
-        assertThat(layoutManager.getChildAt(2).height, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(layoutManager.getChildAt(0)!!.height, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(layoutManager.getChildAt(1)!!.height, isEqualAllowingError(activity.dpToPixel(50)))
+        assertThat(layoutManager.getChildAt(2)!!.height, isEqualAllowingError(activity.dpToPixel(80)))
     }
 
     @Test
@@ -1501,9 +1586,9 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.flexItemCount, `is`(3))
         assertThat(layoutManager.flexLines.size, `is`(1))
         // Verify the item whose align self is set to stretch is stretched
-        assertThat(layoutManager.getChildAt(0).width, isEqualAllowingError(activity.dpToPixel(80)))
-        assertThat(layoutManager.getChildAt(1).width, isEqualAllowingError(activity.dpToPixel(50)))
-        assertThat(layoutManager.getChildAt(2).width, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(layoutManager.getChildAt(0)!!.width, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(layoutManager.getChildAt(1)!!.width, isEqualAllowingError(activity.dpToPixel(50)))
+        assertThat(layoutManager.getChildAt(2)!!.width, isEqualAllowingError(activity.dpToPixel(80)))
     }
 
     @Test
@@ -1548,7 +1633,7 @@ class FlexboxLayoutManagerTest {
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
-        assertThat(layoutManager.getChildAt(layoutManager.childCount - 1).height,
+        assertThat(layoutManager.getChildAt(layoutManager.childCount - 1)!!.height,
                 isEqualAllowingError(activity.dpToPixel(80)))
     }
 
@@ -1594,7 +1679,7 @@ class FlexboxLayoutManagerTest {
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
-        assertThat(layoutManager.getChildAt(layoutManager.childCount - 1).width,
+        assertThat(layoutManager.getChildAt(layoutManager.childCount - 1)!!.width,
                 isEqualAllowingError(activity.dpToPixel(70)))
     }
 
@@ -1652,10 +1737,10 @@ class FlexboxLayoutManagerTest {
         onView(withId(R.id.recyclerview)).perform(swipe(GeneralLocation.TOP_CENTER,
                 GeneralLocation.BOTTOM_CENTER))
 
-        assertThat(layoutManager.getChildAt(positionInSecondLine).bottom,
+        assertThat(layoutManager.getChildAt(positionInSecondLine)!!.bottom,
                 isEqualAllowingError(activity.dpToPixel(210))) // 80 + 130
         // Verify that the view in the same line's cross axis position is correct
-        assertThat(layoutManager.getChildAt(positionInSecondLine - 1).bottom,
+        assertThat(layoutManager.getChildAt(positionInSecondLine - 1)!!.bottom,
                 isEqualAllowingError(activity.dpToPixel(160))) // 80 + 80
     }
 
@@ -1709,10 +1794,10 @@ class FlexboxLayoutManagerTest {
         onView(withId(R.id.recyclerview)).perform(swipe(GeneralLocation.CENTER_LEFT,
                 GeneralLocation.CENTER_RIGHT))
 
-        assertThat(layoutManager.getChildAt(positionInSecondLine).right,
+        assertThat(layoutManager.getChildAt(positionInSecondLine)!!.right,
                 isEqualAllowingError(activity.dpToPixel(210))) // 80 + 130
         // Verify that the view in the same line's cross axis position is correct
-        assertThat(layoutManager.getChildAt(positionInSecondLine - 1).right,
+        assertThat(layoutManager.getChildAt(positionInSecondLine - 1)!!.right,
                 isEqualAllowingError(activity.dpToPixel(160))) // 80 + 80
     }
 
@@ -1761,7 +1846,7 @@ class FlexboxLayoutManagerTest {
         // 4 comes from the number of flex items - positionInSecondBottomLine
         val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
         val anchorView = layoutManager.getChildAt(layoutManager.childCount - 4)
-        assertThat(recyclerView.bottom - anchorView.top,
+        assertThat(recyclerView.bottom - anchorView!!.top,
                 isEqualAllowingError(activity.dpToPixel(210))) // 80 + 130
     }
 
@@ -1838,7 +1923,7 @@ class FlexboxLayoutManagerTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         assertThat(layoutManager.flexDirection, `is`(FlexDirection.ROW))
         // Verify the vertical position (cross size) of the second line is correctly positioned
-        assertThat(layoutManager.getChildAt(3).top, isEqualAllowingError(activity.dpToPixel(140)))
+        assertThat(layoutManager.getChildAt(3)!!.top, isEqualAllowingError(activity.dpToPixel(140)))
     }
 
     @Test
@@ -1868,7 +1953,7 @@ class FlexboxLayoutManagerTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         assertThat(layoutManager.flexDirection, `is`(FlexDirection.COLUMN))
         // Verify the horizontal position (cross size) of the second line is correctly positioned
-        assertThat(layoutManager.getChildAt(3).left, isEqualAllowingError(activity.dpToPixel(120)))
+        assertThat(layoutManager.getChildAt(3)!!.left, isEqualAllowingError(activity.dpToPixel(120)))
     }
 
     @Test
@@ -1923,7 +2008,7 @@ class FlexboxLayoutManagerTest {
 
         // The top coordinate of the first view should be the height of the second view minus the
         // height of the first view (180 - 80)
-        assertThat(layoutManager.getChildAt(0).top, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(layoutManager.getChildAt(0)!!.top, isEqualAllowingError(activity.dpToPixel(100)))
     }
 
     @Test
@@ -1970,7 +2055,8 @@ class FlexboxLayoutManagerTest {
         // The bottom coordinate of the first view in the last line should be the height of the
         // second view in the last line minus the height of the first view in the last line
         // (180 - 80)
-        assertThat(layoutManager.getChildAt(layoutManager.childCount - 2).bottom - layoutManager.getChildAt(layoutManager.childCount - 3).bottom,
+        assertThat(layoutManager.getChildAt(layoutManager.childCount - 2)!!.bottom
+                - layoutManager.getChildAt(layoutManager.childCount - 3)!!.bottom,
                 isEqualAllowingError(activity.dpToPixel(100)))
     }
 
@@ -2001,7 +2087,7 @@ class FlexboxLayoutManagerTest {
 
         assertThat(layoutManager.flexDirection, `is`(FlexDirection.ROW))
         val anchorView = layoutManager.getChildAt(0)
-        val offset = anchorView.top
+        val offset = anchorView!!.top
         assertTrue(offset < 0)
 
         activityRule.runOnUiThread {
@@ -2016,7 +2102,7 @@ class FlexboxLayoutManagerTest {
 
         // Verify that offset position is preserved for the first visible view after the rotation
         val anchorAfterRotate = layoutManager.getChildAt(0)
-        assertTrue(anchorAfterRotate.top < 0)
+        assertTrue(anchorAfterRotate!!.top < 0)
     }
 
     @Test
@@ -2046,7 +2132,7 @@ class FlexboxLayoutManagerTest {
 
         assertThat(layoutManager.flexDirection, `is`(FlexDirection.COLUMN))
         val anchorView = layoutManager.getChildAt(0)
-        val offset = anchorView.left
+        val offset = anchorView!!.left
         assertTrue(offset < 0)
 
         activityRule.runOnUiThread {
@@ -2061,7 +2147,7 @@ class FlexboxLayoutManagerTest {
 
         // Verify that offset position is preserved for the first visible view after the rotation
         val anchorAfterRotate = layoutManager.getChildAt(0)
-        assertTrue(anchorAfterRotate.left < 0)
+        assertTrue(anchorAfterRotate!!.left < 0)
     }
 
     @Test
@@ -2094,16 +2180,16 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.flexDirection, `is`(FlexDirection.ROW))
         var view2 = layoutManager.getChildAt(1)
         // 90 (view width) + 10 (divider width)
-        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view2!!.left, isEqualAllowingError(activity.dpToPixel(100)))
         var view3 = layoutManager.getChildAt(2)
         // 90 (view width) + 10 (divider width) + 90(view width) + 10 (divider width)
-        assertThat(view3.left, isEqualAllowingError(activity.dpToPixel(200)))
+        assertThat(view3!!.left, isEqualAllowingError(activity.dpToPixel(200)))
         var view4 = layoutManager.getChildAt(3)
         // 100 (view height) + 15 (divider height)
-        assertThat(view4.top, isEqualAllowingError(activity.dpToPixel(115)))
+        assertThat(view4!!.top, isEqualAllowingError(activity.dpToPixel(115)))
         var view7 = layoutManager.getChildAt(6)
         // 100 (view height) + 15 (divider height) + 100 (view height) + 15 (divider height)
-        assertThat(view7.top, isEqualAllowingError(activity.dpToPixel(230)))
+        assertThat(view7!!.top, isEqualAllowingError(activity.dpToPixel(230)))
 
         activityRule.runOnUiThread {
             val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
@@ -2115,16 +2201,16 @@ class FlexboxLayoutManagerTest {
 
         view2 = layoutManager.getChildAt(1)
         // 90 (view width)
-        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(90)))
+        assertThat(view2!!.left, isEqualAllowingError(activity.dpToPixel(90)))
         view3 = layoutManager.getChildAt(2)
         // 90 (view width) + 90(view width)
-        assertThat(view3.left, isEqualAllowingError(activity.dpToPixel(180)))
+        assertThat(view3!!.left, isEqualAllowingError(activity.dpToPixel(180)))
         view4 = layoutManager.getChildAt(3)
         // 100 (view height) + 15 (divider height)
-        assertThat(view4.top, isEqualAllowingError(activity.dpToPixel(115)))
+        assertThat(view4!!.top, isEqualAllowingError(activity.dpToPixel(115)))
         view7 = layoutManager.getChildAt(6)
         // 100 (view height) + 15 (divider height) + 100 (view height) + 15 (divider height)
-        assertThat(view7.top, isEqualAllowingError(activity.dpToPixel(230)))
+        assertThat(view7!!.top, isEqualAllowingError(activity.dpToPixel(230)))
 
         activityRule.runOnUiThread {
             val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
@@ -2136,16 +2222,16 @@ class FlexboxLayoutManagerTest {
 
         view2 = layoutManager.getChildAt(1)
         // 90 (view width) + 10 (divider width)
-        assertThat(view2.left, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view2!!.left, isEqualAllowingError(activity.dpToPixel(100)))
         view3 = layoutManager.getChildAt(2)
         // 90 (view width) + 10 (divider width) + 90(view width) + 10 (divider width)
-        assertThat(view3.left, isEqualAllowingError(activity.dpToPixel(200)))
+        assertThat(view3!!.left, isEqualAllowingError(activity.dpToPixel(200)))
         view4 = layoutManager.getChildAt(3)
         // 100 (view height)
-        assertThat(view4.top, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view4!!.top, isEqualAllowingError(activity.dpToPixel(100)))
         view7 = layoutManager.getChildAt(6)
         // 100 (view height) + 100 (view height)
-        assertThat(view7.top, isEqualAllowingError(activity.dpToPixel(200)))
+        assertThat(view7!!.top, isEqualAllowingError(activity.dpToPixel(200)))
     }
 
     @Test
@@ -2179,16 +2265,16 @@ class FlexboxLayoutManagerTest {
         var view1 = layoutManager.getChildAt(0)
         var view2 = layoutManager.getChildAt(1)
         // 90 (view width) + 10 (divider width)
-        assertThat(view1.right - view2.right, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view1!!.right - view2!!.right, isEqualAllowingError(activity.dpToPixel(100)))
         var view3 = layoutManager.getChildAt(2)
         // 90 (view width) + 10 (divider width) + 90(view width) + 10 (divider width)
-        assertThat(view1.right - view3.right, isEqualAllowingError(activity.dpToPixel(200)))
+        assertThat(view1.right - view3!!.right, isEqualAllowingError(activity.dpToPixel(200)))
         var view4 = layoutManager.getChildAt(3)
         // 100 (view height) + 15 (divider height)
-        assertThat(view4.top, isEqualAllowingError(activity.dpToPixel(115)))
+        assertThat(view4!!.top, isEqualAllowingError(activity.dpToPixel(115)))
         var view7 = layoutManager.getChildAt(6)
         // 100 (view height) + 15 (divider height) + 100 (view height) + 15 (divider height)
-        assertThat(view7.top, isEqualAllowingError(activity.dpToPixel(230)))
+        assertThat(view7!!.top, isEqualAllowingError(activity.dpToPixel(230)))
 
         activityRule.runOnUiThread {
             val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
@@ -2201,16 +2287,16 @@ class FlexboxLayoutManagerTest {
         view1 = layoutManager.getChildAt(0)
         view2 = layoutManager.getChildAt(1)
         // 90 (view width)
-        assertThat(view1.right - view2.right, isEqualAllowingError(activity.dpToPixel(90)))
+        assertThat(view1!!.right - view2!!.right, isEqualAllowingError(activity.dpToPixel(90)))
         view3 = layoutManager.getChildAt(2)
         // 90 (view width) + 90(view width)
-        assertThat(view1.right - view3.right, isEqualAllowingError(activity.dpToPixel(180)))
+        assertThat(view1.right - view3!!.right, isEqualAllowingError(activity.dpToPixel(180)))
         view4 = layoutManager.getChildAt(3)
         // 100 (view height) + 15 (divider height)
-        assertThat(view4.top, isEqualAllowingError(activity.dpToPixel(115)))
+        assertThat(view4!!.top, isEqualAllowingError(activity.dpToPixel(115)))
         view7 = layoutManager.getChildAt(6)
         // 100 (view height) + 15 (divider height) + 100 (view height) + 15 (divider height)
-        assertThat(view7.top, isEqualAllowingError(activity.dpToPixel(230)))
+        assertThat(view7!!.top, isEqualAllowingError(activity.dpToPixel(230)))
 
         activityRule.runOnUiThread {
             val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
@@ -2223,18 +2309,18 @@ class FlexboxLayoutManagerTest {
         view1 = layoutManager.getChildAt(0)
         view2 = layoutManager.getChildAt(1)
         // 90 (view width) + 10 (divider width)
-        assertThat(view1.right - view2.right,
+        assertThat(view1!!.right - view2!!.right,
                 isEqualAllowingError(activity.dpToPixel(100)))
         view3 = layoutManager.getChildAt(2)
         // 90 (view width) + 10 (divider width) + 90(view width) + 10 (divider width)
-        assertThat(view1.right - view3.right,
+        assertThat(view1.right - view3!!.right,
                 isEqualAllowingError(activity.dpToPixel(200)))
         view4 = layoutManager.getChildAt(3)
         // 100 (view height)
-        assertThat(view4.top, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view4!!.top, isEqualAllowingError(activity.dpToPixel(100)))
         view7 = layoutManager.getChildAt(6)
         // 100 (view height) + 100 (view height)
-        assertThat(view7.top, isEqualAllowingError(activity.dpToPixel(200)))
+        assertThat(view7!!.top, isEqualAllowingError(activity.dpToPixel(200)))
     }
 
     @Test
@@ -2267,16 +2353,16 @@ class FlexboxLayoutManagerTest {
         assertThat(layoutManager.flexDirection, `is`(FlexDirection.COLUMN))
         var view2 = layoutManager.getChildAt(1)
         // 65 (view height) + 15 (divider height)
-        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(view2!!.top, isEqualAllowingError(activity.dpToPixel(80)))
         var view3 = layoutManager.getChildAt(2)
         // 65 (view height) + 15 (divider height) + 65 (view height) + 15 (divider height)
-        assertThat(view3.top, isEqualAllowingError(activity.dpToPixel(160)))
+        assertThat(view3!!.top, isEqualAllowingError(activity.dpToPixel(160)))
         var view4 = layoutManager.getChildAt(3)
         // 90 (view width) + 10 (divider width)
-        assertThat(view4.left, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view4!!.left, isEqualAllowingError(activity.dpToPixel(100)))
         var view7 = layoutManager.getChildAt(6)
         // 90 (view width) + 10 (divider width) + 90 (view width) + 10 (divider width)
-        assertThat(view7.left, isEqualAllowingError(activity.dpToPixel(200)))
+        assertThat(view7!!.left, isEqualAllowingError(activity.dpToPixel(200)))
 
         activityRule.runOnUiThread {
             val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
@@ -2288,16 +2374,16 @@ class FlexboxLayoutManagerTest {
 
         view2 = layoutManager.getChildAt(1)
         // 65 (view height) + 15 (divider height)
-        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(view2!!.top, isEqualAllowingError(activity.dpToPixel(80)))
         view3 = layoutManager.getChildAt(2)
         // 65 (view height) + 15 (divider height) + 65 (view height) + 15 (divider height)
-        assertThat(view3.top, isEqualAllowingError(activity.dpToPixel(160)))
+        assertThat(view3!!.top, isEqualAllowingError(activity.dpToPixel(160)))
         view4 = layoutManager.getChildAt(3)
         // 90 (view width)
-        assertThat(view4.left, isEqualAllowingError(activity.dpToPixel(90)))
+        assertThat(view4!!.left, isEqualAllowingError(activity.dpToPixel(90)))
         view7 = layoutManager.getChildAt(6)
         // 90 (view width) + 90 (view width)
-        assertThat(view7.left, isEqualAllowingError(activity.dpToPixel(180)))
+        assertThat(view7!!.left, isEqualAllowingError(activity.dpToPixel(180)))
 
         activityRule.runOnUiThread {
             val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
@@ -2309,16 +2395,16 @@ class FlexboxLayoutManagerTest {
 
         view2 = layoutManager.getChildAt(1)
         // 65 (view height)
-        assertThat(view2.top, isEqualAllowingError(activity.dpToPixel(65)))
+        assertThat(view2!!.top, isEqualAllowingError(activity.dpToPixel(65)))
         view3 = layoutManager.getChildAt(2)
         // 65 (view height) + 65 (view height)
-        assertThat(view3.top, isEqualAllowingError(activity.dpToPixel(130)))
+        assertThat(view3!!.top, isEqualAllowingError(activity.dpToPixel(130)))
         view4 = layoutManager.getChildAt(3)
         // 90 (view width) + 10 (divider width)
-        assertThat(view4.left, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view4!!.left, isEqualAllowingError(activity.dpToPixel(100)))
         view7 = layoutManager.getChildAt(6)
         // 90 (view width) + 10 (divider width) + 90 (view width) + 10 (divider width)
-        assertThat(view7.left, isEqualAllowingError(activity.dpToPixel(200)))
+        assertThat(view7!!.left, isEqualAllowingError(activity.dpToPixel(200)))
     }
 
     @Test
@@ -2352,16 +2438,16 @@ class FlexboxLayoutManagerTest {
         var view1 = layoutManager.getChildAt(0)
         var view2 = layoutManager.getChildAt(1)
         // 65 (view height) + 15 (divider height)
-        assertThat(view1.top - view2.top, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(view1!!.top - view2!!.top, isEqualAllowingError(activity.dpToPixel(80)))
         var view3 = layoutManager.getChildAt(2)
         // 65 (view height) + 15 (divider height) + 65 (view height) + 15 (divider height)
-        assertThat(view1.top - view3.top, isEqualAllowingError(activity.dpToPixel(160)))
+        assertThat(view1.top - view3!!.top, isEqualAllowingError(activity.dpToPixel(160)))
         var view4 = layoutManager.getChildAt(3)
         // 90 (view width) + 10 (divider width)
-        assertThat(view4.left, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view4!!.left, isEqualAllowingError(activity.dpToPixel(100)))
         var view7 = layoutManager.getChildAt(6)
         // 90 (view width) + 10 (divider width) + 90 (view width) + 10 (divider width)
-        assertThat(view7.left, isEqualAllowingError(activity.dpToPixel(200)))
+        assertThat(view7!!.left, isEqualAllowingError(activity.dpToPixel(200)))
 
         activityRule.runOnUiThread {
             val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
@@ -2374,16 +2460,16 @@ class FlexboxLayoutManagerTest {
         view1 = layoutManager.getChildAt(0)
         view2 = layoutManager.getChildAt(1)
         // 65 (view height) + 15 (divider height)
-        assertThat(view1.top - view2.top, isEqualAllowingError(activity.dpToPixel(80)))
+        assertThat(view1!!.top - view2!!.top, isEqualAllowingError(activity.dpToPixel(80)))
         view3 = layoutManager.getChildAt(2)
         // 65 (view height) + 15 (divider height) + 65 (view height) + 15 (divider height)
-        assertThat(view1.top - view3.top, isEqualAllowingError(activity.dpToPixel(160)))
+        assertThat(view1.top - view3!!.top, isEqualAllowingError(activity.dpToPixel(160)))
         view4 = layoutManager.getChildAt(3)
         // 90 (view width)
-        assertThat(view4.left, isEqualAllowingError(activity.dpToPixel(90)))
+        assertThat(view4!!.left, isEqualAllowingError(activity.dpToPixel(90)))
         view7 = layoutManager.getChildAt(6)
         // 90 (view width) + 90 (view width)
-        assertThat(view7.left, isEqualAllowingError(activity.dpToPixel(180)))
+        assertThat(view7!!.left, isEqualAllowingError(activity.dpToPixel(180)))
 
         activityRule.runOnUiThread {
             val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
@@ -2396,16 +2482,16 @@ class FlexboxLayoutManagerTest {
         view1 = layoutManager.getChildAt(0)
         view2 = layoutManager.getChildAt(1)
         // 65 (view height)
-        assertThat(view1.top - view2.top, isEqualAllowingError(activity.dpToPixel(65)))
+        assertThat(view1!!.top - view2!!.top, isEqualAllowingError(activity.dpToPixel(65)))
         view3 = layoutManager.getChildAt(2)
         // 65 (view height) + 65 (view height)
-        assertThat(view1.top - view3.top, isEqualAllowingError(activity.dpToPixel(130)))
+        assertThat(view1.top - view3!!.top, isEqualAllowingError(activity.dpToPixel(130)))
         view4 = layoutManager.getChildAt(3)
         // 90 (view width) + 10 (divider width)
-        assertThat(view4.left, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(view4!!.left, isEqualAllowingError(activity.dpToPixel(100)))
         view7 = layoutManager.getChildAt(6)
         // 90 (view width) + 10 (divider width) + 90 (view width) + 10 (divider width)
-        assertThat(view7.left, isEqualAllowingError(activity.dpToPixel(200)))
+        assertThat(view7!!.left, isEqualAllowingError(activity.dpToPixel(200)))
     }
 
     @Test
@@ -2905,7 +2991,7 @@ class FlexboxLayoutManagerTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
         val firstVisible = layoutManager.getChildAt(0)
-        assertThat(firstVisible.width, isEqualAllowingError(activity.dpToPixel(40)))
+        assertThat(firstVisible!!.width, isEqualAllowingError(activity.dpToPixel(40)))
         assertThat(firstVisible.height, isEqualAllowingError(activity.dpToPixel(75)))
     }
 
@@ -2954,7 +3040,7 @@ class FlexboxLayoutManagerTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
         val firstVisible = layoutManager.getChildAt(0)
-        assertThat(firstVisible.width, isEqualAllowingError(activity.dpToPixel(100)))
+        assertThat(firstVisible!!.width, isEqualAllowingError(activity.dpToPixel(100)))
         assertThat(firstVisible.height, isEqualAllowingError(activity.dpToPixel(120)))
     }
 
@@ -3096,9 +3182,9 @@ class FlexboxLayoutManagerTest {
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         assertThat(layoutManager.flexDirection, `is`(FlexDirection.ROW))
-        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(0)), `is`(0))
-        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(1)), `is`(0))
-        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(2)), `is`(0))
+        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(0)!!), `is`(0))
+        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(1)!!), `is`(0))
+        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(2)!!), `is`(0))
         layoutManager.flexLines
                 .mapNotNull { layoutManager.getChildAt(it.firstIndex) }
                 .forEach { assertThat(layoutManager.getLeftDecorationWidth(it), `is`(0)) }
@@ -3120,9 +3206,9 @@ class FlexboxLayoutManagerTest {
                 GeneralLocation.BOTTOM_CENTER))
 
         // Verify even after the scrolling, decoration values are set correctly
-        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(0)), `is`(0))
-        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(1)), `is`(0))
-        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(2)), `is`(0))
+        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(0)!!), `is`(0))
+        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(1)!!), `is`(0))
+        assertThat(layoutManager.getTopDecorationHeight(layoutManager.getChildAt(2)!!), `is`(0))
         layoutManager.flexLines
                 .mapNotNull { layoutManager.getChildAt(it.firstIndex) }
                 .forEach { assertThat(layoutManager.getLeftDecorationWidth(it), `is`(0)) }
@@ -3162,9 +3248,9 @@ class FlexboxLayoutManagerTest {
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         assertThat(layoutManager.flexDirection, `is`(FlexDirection.COLUMN))
-        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(0)), `is`(0))
-        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(1)), `is`(0))
-        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(2)), `is`(0))
+        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(0)!!), `is`(0))
+        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(1)!!), `is`(0))
+        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(2)!!), `is`(0))
         layoutManager.flexLines
                 .mapNotNull { layoutManager.getChildAt(it.firstIndex) }
                 .forEach { assertThat(layoutManager.getTopDecorationHeight(it), `is`(0)) }
@@ -3186,9 +3272,9 @@ class FlexboxLayoutManagerTest {
                 GeneralLocation.CENTER_RIGHT))
 
         // Verify even after the scrolling, decoration values are set correctly
-        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(0)), `is`(0))
-        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(1)), `is`(0))
-        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(2)), `is`(0))
+        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(0)!!), `is`(0))
+        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(1)!!), `is`(0))
+        assertThat(layoutManager.getLeftDecorationWidth(layoutManager.getChildAt(2)!!), `is`(0))
         layoutManager.flexLines
                 .mapNotNull { layoutManager.getChildAt(it.firstIndex) }
                 .forEach { assertThat(layoutManager.getTopDecorationHeight(it), `is`(0)) }
@@ -3247,14 +3333,15 @@ class FlexboxLayoutManagerTest {
             }
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-        assertThat(layoutManager.getChildAt(0).left, `is`(0))
+        val view = layoutManager.getChildAt(0)!!
+        assertThat(view.left, `is`(0))
         onView(withId(R.id.container)).perform(swipe(GeneralLocation.CENTER_RIGHT,
                 GeneralLocation.CENTER_LEFT))
         onView(withId(R.id.container)).perform(swipe(GeneralLocation.CENTER_RIGHT,
                 GeneralLocation.CENTER_LEFT))
         onView(withId(R.id.container)).perform(swipe(GeneralLocation.CENTER_RIGHT,
                 GeneralLocation.CENTER_LEFT))
-        assertThat(layoutManager.getChildAt(0).left, `is`(not(0)))
+        assertThat(view.left, `is`(not(0)))
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         onView(withId(R.id.container)).perform(swipe(GeneralLocation.CENTER_LEFT,
@@ -3265,7 +3352,7 @@ class FlexboxLayoutManagerTest {
                 GeneralLocation.CENTER_RIGHT))
         onView(withId(R.id.container)).perform(swipe(GeneralLocation.CENTER_LEFT,
                 GeneralLocation.CENTER_RIGHT))
-        assertThat(layoutManager.getChildAt(0).left, `is`(0))
+        assertThat(view.left, `is`(0))
     }
 
     @Test
@@ -3289,14 +3376,15 @@ class FlexboxLayoutManagerTest {
             }
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-        assertThat(layoutManager.getChildAt(0).top, `is`(0))
+        val view = layoutManager.getChildAt(0)!!
+        assertThat(view.top, `is`(0))
         onView(withId(R.id.container)).perform(swipe(GeneralLocation.BOTTOM_CENTER,
                 GeneralLocation.TOP_CENTER))
         onView(withId(R.id.container)).perform(swipe(GeneralLocation.BOTTOM_CENTER,
                 GeneralLocation.TOP_CENTER))
         onView(withId(R.id.container)).perform(swipe(GeneralLocation.BOTTOM_CENTER,
                 GeneralLocation.TOP_CENTER))
-        assertThat(layoutManager.getChildAt(0).top, `is`(not(0)))
+        assertThat(view.top, `is`(not(0)))
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         onView(withId(R.id.container)).perform(swipe(GeneralLocation.TOP_CENTER,
@@ -3307,7 +3395,93 @@ class FlexboxLayoutManagerTest {
                 GeneralLocation.BOTTOM_CENTER))
         onView(withId(R.id.container)).perform(swipe(GeneralLocation.TOP_CENTER,
                 GeneralLocation.BOTTOM_CENTER))
-        assertThat(layoutManager.getChildAt(0).top, `is`(0))
+        assertThat(view.top, `is`(0))
+    }
+
+    @Test
+    @FlakyTest
+    @Throws(Throwable::class)
+    fun testMaxLine() {
+        val activity = activityRule.activity
+        val layoutManager = FlexboxLayoutManager(activity)
+        val adapter = TestAdapter()
+        activityRule.runOnUiThread {
+            activity.setContentView(R.layout.recyclerview)
+            val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
+            layoutManager.flexDirection = FlexDirection.ROW
+            layoutManager.maxLine = 3
+            recyclerView.layoutManager = layoutManager
+            recyclerView.adapter = adapter
+            for (i in 1..50) {
+                val lp = createLayoutParams(activity, 100, 70)
+                lp.flexShrink = 0f
+                adapter.addItem(lp)
+            }
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        assertThat(layoutManager.flexLines.size, `is`(3))
+    }
+
+    @Test
+    @FlakyTest
+    @Throws(Throwable::class)
+    fun testNowrap_justifyContentCenter_directionRow() {
+        // This is to fix https://github.com/google/flexbox-layout/issues/469
+        val activity = activityRule.activity
+        val layoutManager = FlexboxLayoutManager(activity)
+        val adapter = TestAdapter()
+        val height = 70
+        activityRule.runOnUiThread {
+            activity.setContentView(R.layout.recyclerview)
+            val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
+            layoutManager.flexDirection = FlexDirection.ROW
+            layoutManager.flexWrap = FlexWrap.NOWRAP
+            layoutManager.justifyContent = JustifyContent.CENTER
+            recyclerView.layoutManager = layoutManager
+            recyclerView.adapter = adapter
+            for (i in 1..3) {
+                val lp = createLayoutParams(activity, 100, height)
+                adapter.addItem(lp)
+            }
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        val view1Bottom= layoutManager.getChildAt(0)!!.bottom
+        val view2Bottom = layoutManager.getChildAt(1)!!.bottom
+        val view3Bottom = layoutManager.getChildAt(2)!!.bottom
+        assertThat(view1Bottom, `is`(activity.dpToPixel(height)))
+        assertThat(view2Bottom, `is`(activity.dpToPixel(height)))
+        assertThat(view3Bottom, `is`(activity.dpToPixel(height)))
+    }
+
+    @Test
+    @FlakyTest
+    @Throws(Throwable::class)
+    fun testNowrap_justifyContentCenter_directionColumn() {
+        // This is to fix https://github.com/google/flexbox-layout/issues/469
+        val activity = activityRule.activity
+        val layoutManager = FlexboxLayoutManager(activity)
+        val adapter = TestAdapter()
+        val width = 100
+        activityRule.runOnUiThread {
+            activity.setContentView(R.layout.recyclerview)
+            val recyclerView = activity.findViewById<RecyclerView>(R.id.recyclerview)
+            layoutManager.flexDirection = FlexDirection.COLUMN
+            layoutManager.flexWrap = FlexWrap.NOWRAP
+            layoutManager.justifyContent = JustifyContent.CENTER
+            recyclerView.layoutManager = layoutManager
+            recyclerView.adapter = adapter
+            for (i in 1..3) {
+                val lp = createLayoutParams(activity, width, 70)
+                adapter.addItem(lp)
+            }
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        val view1Right= layoutManager.getChildAt(0)!!.right
+        val view2Right = layoutManager.getChildAt(1)!!.right
+        val view3Right = layoutManager.getChildAt(2)!!.right
+        assertThat(view1Right, `is`(activity.dpToPixel(width)))
+        assertThat(view2Right, `is`(activity.dpToPixel(width)))
+        assertThat(view3Right, `is`(activity.dpToPixel(width)))
     }
 
     /**

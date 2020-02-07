@@ -10,14 +10,23 @@ Add the following dependency to your `build.gradle` file:
 
 ```
 dependencies {
-    implementation 'com.google.android:flexbox:0.3.2'
+    implementation 'com.google.android:flexbox:2.0.1'
 }
 ```
 
-# Usage
-There are two ways of using Flexbox in your layout. 
+**Note that the default values for `alignItems` and `alignContent` for `FlexboxLayout` have been changed from `stretch` to `flex_start` starting from 2.0.0, it may break the existing apps.
+Please make sure to set `stretch` explicitly if you want to apply the behavior of `stretch`.**
 
-## FlexboxLayout 
+
+**Note that starting from 1.1.0, the library is expected to use with AndroidX. Please migrate to [AndroidX](https://developer.android.com/jetpack/androidx/migrate) if you use 1.1.0 or above.**
+
+**Please use 1.0.0 if you haven't migrated to AndroidX.**
+
+
+# Usage
+There are two ways of using Flexbox in your layout.
+
+## FlexboxLayout
 The first one is `FlexboxLayout` that extends the `ViewGroup` like `LinearLayout` and `RelativeLayout`.
 You can specify the attributes from a layout XML like:
 ```xml
@@ -157,23 +166,23 @@ Here is a quick overview of the attributes/features comparison between the two i
 
 * __alignItems__
   * This attribute controls the alignment along the cross axis. Possible values are:
-    * stretch (default)
-    * flex_start
+    * flex_start (default)
     * flex_end
     * center
     * baseline
+    * stretch
 
     ![Align Items explanation](/assets/align-items.gif)
 
 * __alignContent__
   * This attribute controls the alignment of the flex lines in the flex container. Possible values
   are:
-    * stretch (default)
-    * flex_start
+    * flex_start (default)
     * flex_end
     * center
     * space_between
     * space_around
+    * stretch
 
     ![Align Content explanation](/assets/align-content.gif)
 
@@ -363,6 +372,9 @@ equivalent attribute
   * The equivalent attribute doesn't exist in the CSS Flexible Box Module specification,
   but as explained above, Android developers will benefit by having this attribute for having
   more control over when a wrapping happens.
+
+(5) Default values for `alignItems` and `alignContent` are set to `flex_start` instead of `stretch`.
+  * Setting `stretch` for the `alignItems` is expensive because the children of `FlexboxLayout` are measured more than twice. The difference is more obvious when the layout hierarchy is deeply nested.
 
 ## Xamarin Binding
 Xamarin binding is now available on [NuGet](https://www.nuget.org/packages/FlexboxLayoutXamarinBindingAndroid/) thanks to [@btripp](https://github.com/btripp)

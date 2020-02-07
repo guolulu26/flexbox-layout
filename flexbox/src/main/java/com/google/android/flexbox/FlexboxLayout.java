@@ -22,9 +22,6 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
-import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.util.SparseIntArray;
 import android.view.View;
@@ -36,6 +33,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 
 /**
  * A layout that arranges its children in a way its attributes can be specified like the
@@ -56,6 +57,7 @@ import java.util.List;
  * <li>{@code dividerDrawable}</li>
  * <li>{@code dividerDrawableHorizontal}</li>
  * <li>{@code dividerDrawableVertical}</li>
+ * <li>{@code maxLine}</li>
  * </ul>
  * for the FlexboxLayout.
  *
@@ -100,7 +102,7 @@ public class FlexboxLayout extends ViewGroup implements FlexContainer {
 
     /**
      * The current value of the {@link AlignItems}, the default value is
-     * {@link AlignItems#STRETCH}.
+     * {@link AlignItems#FLEX_START}.
      *
      * @see AlignItems
      */
@@ -108,11 +110,16 @@ public class FlexboxLayout extends ViewGroup implements FlexContainer {
 
     /**
      * The current value of the {@link AlignContent}, the default value is
-     * {@link AlignContent#STRETCH}.
+     * {@link AlignContent#FLEX_START}.
      *
      * @see AlignContent
      */
     private int mAlignContent;
+
+    /**
+     * The current value of the maxLine attribute, which specifies the maximum number of flex lines.
+     */
+    private int mMaxLine = NOT_SET;
 
     /**
      * The int definition to be used as the arguments for the {@link #setShowDivider(int)},
@@ -216,8 +223,9 @@ public class FlexboxLayout extends ViewGroup implements FlexContainer {
         mFlexWrap = a.getInt(R.styleable.FlexboxLayout_flexWrap, FlexWrap.NOWRAP);
         mJustifyContent = a
                 .getInt(R.styleable.FlexboxLayout_justifyContent, JustifyContent.FLEX_START);
-        mAlignItems = a.getInt(R.styleable.FlexboxLayout_alignItems, AlignItems.STRETCH);
-        mAlignContent = a.getInt(R.styleable.FlexboxLayout_alignContent, AlignContent.STRETCH);
+        mAlignItems = a.getInt(R.styleable.FlexboxLayout_alignItems, AlignItems.FLEX_START);
+        mAlignContent = a.getInt(R.styleable.FlexboxLayout_alignContent, AlignContent.FLEX_START);
+        mMaxLine = a.getInt(R.styleable.FlexboxLayout_maxLine, NOT_SET);
         Drawable drawable = a.getDrawable(R.styleable.FlexboxLayout_dividerDrawable);
         if (drawable != null) {
             setDividerDrawableHorizontal(drawable);
@@ -1205,6 +1213,19 @@ public class FlexboxLayout extends ViewGroup implements FlexContainer {
         }
     }
 
+    @Override
+    public int getMaxLine() {
+        return mMaxLine;
+    }
+
+    @Override
+    public void setMaxLine(int maxLine) {
+        if (mMaxLine != maxLine) {
+            mMaxLine = maxLine;
+            requestLayout();
+        }
+    }
+
     /**
      * @return the flex lines composing this flex container. This method returns a copy of the
      * original list excluding a dummy flex line (flex line that doesn't have any flex items in it
@@ -1577,12 +1598,12 @@ public class FlexboxLayout extends ViewGroup implements FlexContainer {
         /**
          * @see FlexItem#getMinWidth()
          */
-        private int mMinWidth;
+        private int mMinWidth = NOT_SET;
 
         /**
          * @see FlexItem#getMinHeight()
          */
-        private int mMinHeight;
+        private int mMinHeight = NOT_SET;
 
         /**
          * @see FlexItem#getMaxWidth()
@@ -1615,9 +1636,9 @@ public class FlexboxLayout extends ViewGroup implements FlexContainer {
                     .getFraction(R.styleable.FlexboxLayout_Layout_layout_flexBasisPercent, 1, 1,
                             FLEX_BASIS_PERCENT_DEFAULT);
             mMinWidth = a
-                    .getDimensionPixelSize(R.styleable.FlexboxLayout_Layout_layout_minWidth, 0);
+                    .getDimensionPixelSize(R.styleable.FlexboxLayout_Layout_layout_minWidth, NOT_SET);
             mMinHeight = a
-                    .getDimensionPixelSize(R.styleable.FlexboxLayout_Layout_layout_minHeight, 0);
+                    .getDimensionPixelSize(R.styleable.FlexboxLayout_Layout_layout_minHeight, NOT_SET);
             mMaxWidth = a.getDimensionPixelSize(R.styleable.FlexboxLayout_Layout_layout_maxWidth,
                     MAX_SIZE);
             mMaxHeight = a.getDimensionPixelSize(R.styleable.FlexboxLayout_Layout_layout_maxHeight,
